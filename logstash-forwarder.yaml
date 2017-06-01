@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: logstash-forwarder-node1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: logstash-forwarder-node1
+    spec:
+      containers:
+      - name: logstash-forwarder-node1
+        image: quay.io/pires/docker-logstash-forwarder:0.4
+        imagePullPolicy: IfNotPresent
+        command: []
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: certs
+          mountPath: "/logstash-forwarder/certs"
+        - name: config
+          mountPath: "/logstash-forwarder/config"
+        - name: kubelog
+          mountPath: "/var/log/containers/"
+        - name: dockerlog
+          mountPath: "/var/lib/docker/containers/"
+        - name: syslog
+          mountPath: "/var/log/syslog"
+      nodeSelector:
+        node: logstash0
+      volumes:
+      - name: certs
+        hostPath:
+          path: "/logstash-forwarder/certs"
+      - secret:
+          secretName: logstash-forwarder.conf
+        name: config
+      - name: kubelog
+        hostPath:
+          path: "/var/log/containers/"
+      - name: dockerlog
+        hostPath:
+          path: "/var/lib/docker/containers/"
+      - name: syslog
+        hostPath:
+          path: "/var/log/syslog"
+
